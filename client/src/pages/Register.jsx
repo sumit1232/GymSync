@@ -1,14 +1,67 @@
-// src/pages/Register.jsx
+import { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const { name, email, password, confirmPassword } = form;
+
+    // validation
+    if (!name || !email || !password || !confirmPassword) {
+      return alert("All fields required");
+    }
+
+    if (password !== confirmPassword) {
+      return alert("Passwords do not match");
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/register",
+        { name, email, password }
+      );
+
+      alert(res.data.message || "Registered successfully");
+
+      // redirect to login
+      navigate("/login");
+
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFFBF1] px-4">
-
-      {/* CONTAINER */}
       <div className="grid md:grid-cols-2 bg-white rounded-2xl shadow-lg overflow-hidden max-w-5xl w-full">
 
-        {/* LEFT SIDE (IMAGE) */}
+        {/* IMAGE */}
         <motion.div
           initial={{ opacity: 0, x: -80 }}
           animate={{ opacity: 1, x: 0 }}
@@ -22,7 +75,7 @@ const Register = () => {
           />
         </motion.div>
 
-        {/* RIGHT SIDE (FORM) */}
+        {/* FORM */}
         <motion.div
           initial={{ opacity: 0, x: 80 }}
           animate={{ opacity: 1, x: 0 }}
@@ -32,64 +85,55 @@ const Register = () => {
           <h2 className="text-3xl font-bold text-[#E36A6A]">
             Create Account 🚀
           </h2>
-          <p className="text-gray-600 mt-2">
-            Join and manage your gym efficiently
-          </p>
 
-          {/* FORM */}
-          <form className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
 
-            <div>
-              <label className="block text-sm font-medium">Full Name</label>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
+            <input
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
-            <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
-            <div>
-              <label className="block text-sm font-medium">Password</label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
-            <div>
-              <label className="block text-sm font-medium">Confirm Password</label>
-              <input
-                type="password"
-                placeholder="Confirm password"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
             <button
-              type="button"
-              className="w-full bg-[#E36A6A] text-white py-2 rounded-lg hover:scale-105 transition"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#E36A6A] text-white py-2 rounded-lg disabled:opacity-50"
             >
-              Register
+              {loading ? "Registering..." : "Register"}
             </button>
+
           </form>
 
-          {/* FOOTER */}
-          <p className="mt-6 text-sm text-gray-600">
-            Already have an account?{" "}
-            <span className="text-[#E36A6A] font-semibold cursor-pointer">
-              Login
-            </span>
-          </p>
         </motion.div>
 
       </div>

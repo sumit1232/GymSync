@@ -1,14 +1,64 @@
-// src/pages/Login.jsx
+import { useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    email: "",
+    password: ""
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const { email, password } = form;
+
+    // validation
+    if (!email || !password) {
+      return alert("Email and password required");
+    }
+
+    try {
+      setLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        form
+      );
+
+      // store token
+      localStorage.setItem("token", res.data.token);
+
+      alert(res.data.message || "Login successful");
+
+      // redirect
+      navigate("/member/dashboard");
+
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFFBF1] px-4">
-
-      {/* CONTAINER */}
       <div className="grid md:grid-cols-2 bg-white rounded-2xl shadow-lg overflow-hidden max-w-4xl w-full">
 
-        {/* LEFT SIDE (FORM) */}
+        {/* LEFT */}
         <motion.div
           initial={{ opacity: 0, x: -80 }}
           animate={{ opacity: 1, x: 0 }}
@@ -18,59 +68,39 @@ const Login = () => {
           <h2 className="text-3xl font-bold text-[#E36A6A]">
             Welcome Back 👋
           </h2>
-          <p className="text-gray-600 mt-2">
-            Login to manage your gym
-          </p>
 
-          {/* FORM */}
-          <form className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
 
-            <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
-            <div>
-              <label className="block text-sm font-medium">Password</label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="w-full mt-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E36A6A]"
-              />
-            </div>
-
-            <div className="flex justify-between items-center text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" />
-                Remember me
-              </label>
-              <a href="#" className="text-[#E36A6A] hover:underline">
-                Forgot Password?
-              </a>
-            </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#E36A6A]"
+            />
 
             <button
-              type="button"
-              className="w-full bg-[#E36A6A] text-white py-2 rounded-lg hover:scale-105 transition"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#E36A6A] text-white py-2 rounded-lg disabled:opacity-50"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
-          </form>
 
-          {/* FOOTER */}
-          <p className="mt-6 text-sm text-gray-600">
-            Don’t have an account?{" "}
-            <span className="text-[#E36A6A] font-semibold cursor-pointer">
-              Register
-            </span>
-          </p>
+          </form>
         </motion.div>
 
-        {/* RIGHT SIDE (IMAGE / ILLUSTRATION) */}
+        {/* RIGHT */}
         <motion.div
           initial={{ opacity: 0, x: 80 }}
           animate={{ opacity: 1, x: 0 }}

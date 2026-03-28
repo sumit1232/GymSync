@@ -20,9 +20,9 @@ import Profile from "./pages/member/Profile";
 import Workout from "./pages/member/Workout";
 import Attendance from "./pages/member/Attendance";
 
-// Protected Route
-import ProtectedRoute from "./pages/routes/ProtectedRoute";
 import PageNotFound from "./pages/PageNotFound";
+import AdminLayout from "./layouts/AdminLayout";
+import MemberLayout from "./layouts/MemberLayout";
 
 function App() {
   return (
@@ -34,99 +34,27 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* ADMIN ROUTES */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/members"
-          element={
-            <ProtectedRoute role="admin">
-              <Members />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/trainers"
-          element={
-            <ProtectedRoute role="admin">
-              <Trainers />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/payments"
-          element={
-            <ProtectedRoute role="admin">
-              <Payments />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/plans"
-          element={
-            <ProtectedRoute role="admin">
-              <Plans />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/reports"
-          element={
-            <ProtectedRoute role="admin">
-              <Reports />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/settings"
-          element={
-            <ProtectedRoute role="admin">
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
 
-        {/* MEMBER ROUTES */}
-        <Route
-          path="/member/dashboard"
-          element={
-            <ProtectedRoute role="member">
-              <MemberDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/member/profile"
-          element={
-            <ProtectedRoute role="member">
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/member/workout"
-          element={
-            <ProtectedRoute role="member">
-              <Workout />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/member/attendance"
-          element={
-            <ProtectedRoute role="member">
-              <Attendance />
-            </ProtectedRoute>
-          }
-        />
+        {/* ADMIN */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="members" element={<Members />} />
+          <Route path="trainers" element={<Trainers />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="plans" element={<Plans />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
 
-        {/* 404 FALLBACK */}
+        {/* MEMBER */}
+        <Route path="/member" element={<MemberLayout />}>
+          <Route path="dashboard" element={<MemberDashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="workout" element={<Workout />} />
+          <Route path="attendance" element={<Attendance />} />
+        </Route>
+
+        {/* 404 */}
         <Route path="*" element={<PageNotFound />} />
 
       </Routes>

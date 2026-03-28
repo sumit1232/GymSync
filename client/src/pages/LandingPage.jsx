@@ -1,28 +1,14 @@
 // src/pages/LandingPage.jsx
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 const LandingPage = () => {
   return (
     <div className="bg-[#FFFBF1] text-gray-800 overflow-x-hidden">
 
       {/* NAVBAR */}
-      <nav className="flex justify-between items-center px-6 md:px-16 py-4">
-        <h1 className="text-2xl font-bold text-[#E36A6A]">GymStack</h1>
-
-        <div className="hidden md:flex gap-8 font-medium">
-          <a href="#">Home</a>
-          <a href="#">Features</a>
-          <a href="#">Pricing</a>
-        </div>
-
-         <Link
-          to="/login"
-          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition"
-        >
-          Login
-        </Link>
-      </nav>
+    <Navbar/>
 
       {/* HERO */}
       <section className="flex flex-col md:flex-row items-center justify-between px-6 md:px-16 py-16">
