@@ -10,7 +10,8 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 ChartJS.register(
   CategoryScale,
@@ -25,24 +26,55 @@ const Plans = () => {
 
   const [showModal, setShowModal] = useState(false);
 
-const [plans, setPlans] = useState([]);
-const [formData, setFormData] = useState({
-  name: "",
-  price: "",
-  duration: "",
-  features: "",
-  status: "Active",
-});
+  const [plans, setPlans] = useState([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    duration: "",
+    features: "",
+    status: "Active",
+  });
 
-        // Function to open the modal
-    const openForm = () => {
-      setShowModal(true); // opens the modal
-    };
-  
-    // Function to close the modal
-    const closeForm = () => {
-      setShowModal(false); // closes the modal
-    };
+  const handleData = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const saveForm = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post("http://localhost:3000/plans", formData);
+      console.log("Plan added:", response.data);
+      setFormData({ name: "", price: "", duration: "", features: "", status: "Active" });
+      closeForm();
+      fetchData(); // refresh plan list
+    } catch (error) {
+      console.error("Error adding plan:", error);
+      alert("Failed to add plan. Please try again.");
+    }
+  };
+
+    const fetchData = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/plans");
+      setPlans(response.data);
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+      alert("Failed to fetch plans. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  // Function to open the modal
+  const openForm = () => {
+    setShowModal(true); // opens the modal
+  };
+
+  // Function to close the modal
+  const closeForm = () => {
+    setShowModal(false); // closes the modal
+  };
 
 
   // 📊 Chart Data
@@ -67,32 +99,6 @@ const [formData, setFormData] = useState({
     ],
   };
 
-  // 📋 Static Plans
-  // const plans = [
-  //   {
-  //     name: "Basic",
-  //     price: "₹999",
-  //     duration: "1 Month",
-  //     features: ["Gym Access", "Locker"],
-  //   },
-  //   {
-  //     name: "Standard",
-  //     price: "₹1999",
-  //     duration: "3 Months",
-  //     features: ["Gym Access", "Locker", "Trainer Support"],
-  //   },
-  //   {
-  //     name: "Premium",
-  //     price: "₹4999",
-  //     duration: "6 Months",
-  //     features: [
-  //       "Gym Access",
-  //       "Locker",
-  //       "Personal Trainer",
-  //       "Diet Plan",
-  //     ],
-  //   },
-  // ];
 
   return (
     <div className="min-h-screen bg-[#FFFBF1] p-6">
@@ -107,106 +113,96 @@ const [formData, setFormData] = useState({
           Plans Management
         </h1>
 
-        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition" onClick={()=>openForm()}>
+        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition" onClick={() => openForm()}>
           + Add Plan
         </button>
       </motion.div>
 
-{/* Modal */}
-{showModal && (
-  <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
-    >
-      <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
-        Add New Plan
-      </h2>
-
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          try {
-            const res = await fetch("/api/plans", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(formData),
-            });
-            const newPlan = await res.json();
-            setPlans([newPlan, ...plans]); // update plans state
-            setShowModal(false);
-            setFormData({ name: "", price: "", duration: "", features: "", status: "Active" });
-          } catch (err) {
-            console.error(err);
-          }
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Plan Name"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
-
-        <input
-          type="number"
-          placeholder="Price (₹)"
-          value={formData.price}
-          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
-
-        <input
-          type="text"
-          placeholder="Duration (e.g., 1 Month)"
-          value={formData.duration}
-          onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
-
-        <textarea
-          placeholder="Features (comma separated)"
-          value={formData.features}
-          onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
-
-        <select
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-        >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            type="button"
-            onClick={closeForm}
-            className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
           >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
-          >
-            Add Plan
-          </button>
+            <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
+              Add New Plan
+            </h2>
+
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={saveForm}
+            >
+              <input
+                type="text"
+                placeholder="Plan Name"
+               onChange={handleData}
+               name="name"
+                value={formData.name}
+                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                required
+              />
+
+              <input
+                type="number"
+                placeholder="Price (₹)"
+               onChange={handleData}
+               name="price"
+                value={formData.price}
+                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                required
+              />
+
+              <input
+                type="text"
+                placeholder="Duration (e.g., 1 Month)"
+               onChange={handleData}
+               name="duration"
+                value={formData.duration}
+                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                required
+              />
+
+              <textarea
+                placeholder="Features (comma separated)"
+               onChange={handleData}
+               name="features"
+                value={formData.features}
+                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                required
+              />
+
+              <select
+               onChange={handleData}
+               value={formData.status}
+               name="status"
+                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={closeForm}
+                  className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
+                >
+                  Add Plan
+                </button>
+              </div>
+            </form>
+          </motion.div>
         </div>
-      </form>
-    </motion.div>
-  </div>
-)}
+      )}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
@@ -258,37 +254,66 @@ const [formData, setFormData] = useState({
         </motion.div>
       </div>
 
-      {/* PLANS CARDS */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        className="grid md:grid-cols-3 gap-6 mt-10"
-      >
-        {plans.map((plan, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05 }}
-            className="bg-white p-6 rounded-xl shadow-md border-t-4 border-[#E36A6A]"
+{/* PLANS CARDS */}
+<motion.div
+  initial={{ opacity: 0, y: 40 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10"
+>
+  {plans.map((plan, i) => (
+    <motion.div
+      key={i}
+      whileHover={{ scale: 1.03 }}
+      className="bg-white p-6 rounded-2xl shadow-md border hover:shadow-lg transition"
+    >
+      {/* HEADER */}
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-bold text-[#E36A6A]">
+          {plan.name}
+        </h3>
+
+        <span
+          className={`text-xs px-2 py-1 rounded-full ${
+            plan.status === "Active"
+              ? "bg-green-100 text-green-600"
+              : "bg-gray-200 text-gray-600"
+          }`}
+        >
+          {plan.status}
+        </span>
+      </div>
+
+      {/* PRICE */}
+      <p className="text-3xl font-bold mt-3">
+        ₹{plan.price}
+      </p>
+
+      <p className="text-gray-500 text-sm">
+        {plan.duration}
+      </p>
+
+      {/* FEATURES TAGS */}
+      <div className="flex flex-wrap gap-2 mt-4">
+        {(Array.isArray(plan.features)
+          ? plan.features
+          : plan.features?.split(",")
+        )?.map((f, idx) => (
+          <span
+            key={idx}
+            className="text-xs bg-[#FFF2D0] text-[#E36A6A] px-2 py-1 rounded-full"
           >
-            <h3 className="text-xl font-bold text-[#E36A6A]">
-              {plan.name}
-            </h3>
-
-            <p className="text-2xl font-bold mt-2">{plan.price}</p>
-            <p className="text-gray-600">{plan.duration}</p>
-
-            <ul className="mt-4 space-y-2 text-gray-600">
-              {plan.features.map((f, idx) => (
-                <li key={idx}>• {f}</li>
-              ))}
-            </ul>
-
-            <button className="mt-6 w-full bg-[#E36A6A] text-white py-2 rounded-lg hover:scale-105 transition">
-              Edit Plan
-            </button>
-          </motion.div>
+            {f}
+          </span>
         ))}
-      </motion.div>
+      </div>
+
+      {/* ACTION */}
+      <button className="mt-6 w-full bg-[#E36A6A] text-white py-2 rounded-lg hover:opacity-90 transition">
+        Edit Plan
+      </button>
+    </motion.div>
+  ))}
+</motion.div>
 
     </div>
   );

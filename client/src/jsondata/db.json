@@ -1,0 +1,96 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "title": "json-server",
+      "author": "typicode"
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "body": "some comment",
+      "postId": 1
+    }
+  ],
+  "members": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "plan": "Premium",
+      "status": "Active"
+    },
+    {
+      "name": "Sumit Jadav",
+      "email": "sumitjadav2525@gmail.com",
+      "plan": "Basic",
+      "status": "Inactive",
+      "id": 2
+    },
+    {
+      "name": "Saurabh Magare",
+      "email": "sauitjadav2525@gmail.com",
+      "plan": "Standard",
+      "status": "Active",
+      "id": 3
+    }
+  ],
+  "trainers": [
+    {
+      "id": 1,
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "specialization": "Strength",
+      "experience": "5 Years"
+    },
+    {
+      "name": "Sumit Jadav",
+      "email": "sumitjadav2525@gmail.com",
+      "specialization": "Yoga",
+      "experience": "3",
+      "id": 2
+    }
+  ],
+  "payments": [
+    {
+      "name": "Sumit Jadav",
+      "amount": "350.00",
+      "method": "Cash",
+      "status": "Paid",
+      "id": 3
+    }
+  ],
+  "plans": [
+    {
+      "id": 1,
+      "name": "Basic",
+      "duration": "1 Month",
+      "price": "30.00"
+    },
+    {
+      "id": 2,
+      "name": "Standard",
+      "duration": "3 Months",
+      "price": "80.00"
+    },
+    {
+      "id": 3,
+      "name": "Premium",
+      "duration": "6 Months",
+      "price": "150.00"
+    },
+    {
+      "name": "december",
+      "price": "2000",
+      "duration": "3",
+      "features": "yoga, cardio",
+      "status": "Active",
+      "": "d",
+      "id": 4
+    }
+  ],
+  "profile": {
+    "name": "typicode"
+  }
+}
