@@ -10,6 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
+import { useState } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -21,6 +22,17 @@ ChartJS.register(
 );
 
 const Members = () => {
+   const [showModal, setShowModal] = useState(false);
+
+     // Function to open the modal
+  const openForm = () => {
+    setShowModal(true); // opens the modal
+  };
+
+  // Function to close the modal
+  const closeForm = () => {
+    setShowModal(false); // closes the modal
+  };
   // 📊 Chart Data
   const growthData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May"],
@@ -64,10 +76,65 @@ const Members = () => {
           Members Management
         </h1>
 
-        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition">
+        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition" onClick={()=>openForm()}>
           + Add Member
         </button>
       </motion.div>
+
+
+      {/* Modal */}
+{showModal && (
+  <div className="fixed inset-0  bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.8, opacity: 0 }}
+      className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
+    >
+      <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
+        Add New Member
+      </h2>
+
+      <form className="flex flex-col gap-4">
+        <input
+          type="text"
+          placeholder="Full Name"
+          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+        />
+        <select className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition">
+          <option value="Basic">Basic</option>
+          <option value="Standard">Standard</option>
+          <option value="Premium">Premium</option>
+        </select>
+        <select className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            type="button"
+            onClick={closeForm}
+            className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
+          >
+            Add Member
+          </button>
+        </div>
+      </form>
+    </motion.div>
+  </div>
+)}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
