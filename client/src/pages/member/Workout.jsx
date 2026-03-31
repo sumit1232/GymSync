@@ -22,10 +22,12 @@ ChartJS.register(
 
 const Workout = () => {
   const [showModal, setShowModal] = useState(false);
+
   const [formData, setFormData] = useState({
     day: "",
     exercises: "",
   });
+
   const [workouts, setWorkouts] = useState([
     {
       day: "Monday",
@@ -50,16 +52,35 @@ const Workout = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (!formData.day || !formData.exercises) return;
+
+    // prevent duplicate day
+    const exists = workouts.find(
+      (w) => w.day.toLowerCase() === formData.day.toLowerCase()
+    );
+
+    if (exists) {
+      alert("Workout for this day already exists");
+      return;
+    }
+
     setWorkouts([
       ...workouts,
-      { day: formData.day, exercises: formData.exercises.split(",") },
+      {
+        day: formData.day,
+        exercises: formData.exercises
+          .split(",")
+          .map((ex) => ex.trim())
+          .filter(Boolean),
+      },
     ]);
+
     setFormData({ day: "", exercises: "" });
     closeForm();
   };
 
-  // Charts data
+  // Charts
   const calorieData = {
     labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     datasets: [
@@ -114,40 +135,30 @@ const Workout = () => {
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6 mt-10">
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md"
-        >
-          <h2 className="text-lg font-semibold mb-4">Weekly Calories Burn</h2>
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="mb-4 font-semibold">Weekly Calories Burn</h2>
           <Bar data={calorieData} />
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center"
-        >
-          <h2 className="text-lg font-semibold mb-4">Workout Distribution</h2>
+        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
+          <h2 className="mb-4 font-semibold">Workout Distribution</h2>
           <div className="w-[250px]">
             <Doughnut data={workoutType} />
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* WORKOUT LIST */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        className="mt-10 grid md:grid-cols-2 gap-6"
-      >
+      <div className="mt-10 grid md:grid-cols-2 gap-6">
         {workouts.map((item, i) => (
           <motion.div
-            key={i}
+            key={`${item.day}-${i}`}
             whileHover={{ scale: 1.03 }}
             className="bg-[#FFF2D0] p-6 rounded-xl shadow-md"
           >
-            <h3 className="text-lg font-semibold text-[#E36A6A]">{item.day}</h3>
+            <h3 className="text-lg font-semibold text-[#E36A6A]">
+              {item.day}
+            </h3>
             <ul className="mt-3 space-y-2 text-gray-700">
               {item.exercises.map((ex, idx) => (
                 <li key={idx}>• {ex}</li>
@@ -155,41 +166,42 @@ const Workout = () => {
             </ul>
           </motion.div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* ADD WORKOUT BUTTON */}
+      {/* ADD BUTTON */}
       <div className="flex justify-end mt-6">
         <button
           onClick={openForm}
-          className="px-6 py-2 bg-[#E36A6A] text-white rounded-lg hover:bg-[#d85d5d] transition"
+          className="px-6 py-2 bg-[#E36A6A] text-white rounded-lg hover:bg-[#d85d5d]"
         >
           Add Workout
         </button>
       </div>
 
-      {/* ADD WORKOUT MODAL */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
+        <div
+          onClick={closeForm}
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50"
+        >
           <motion.div
+            onClick={(e) => e.stopPropagation()}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200"
+            className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md"
           >
             <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
               Add Workout
             </h2>
 
-            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <input
-                type="text"
-                placeholder="Day (e.g., Monday)"
+                placeholder="Day"
                 value={formData.day}
                 onChange={(e) =>
                   setFormData({ ...formData, day: e.target.value })
                 }
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-                required
+                className="border p-3 rounded-lg"
               />
 
               <textarea
@@ -198,23 +210,23 @@ const Workout = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, exercises: e.target.value })
                 }
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-                required
+                className="border p-3 rounded-lg"
               />
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div className="flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
+                  className="px-4 py-2 bg-[#E36A6A] text-white rounded-lg"
                 >
-                  Add Workout
+                  Add
                 </button>
               </div>
             </form>
