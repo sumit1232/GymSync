@@ -1,4 +1,3 @@
-// src/pages/admin/Members.jsx
 import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
@@ -10,7 +9,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 
 ChartJS.register(
@@ -28,35 +27,31 @@ const Members = () => {
     name: "",
     email: "",
     plan: "",
-    status: ""
+    status: "",
   });
   const [showModal, setShowModal] = useState(false);
 
-  const handleData = (e) => {
-    setUserdata({ ...userdata, [e.target.name]: e.target.value });
+  // ================= API =================
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/members");
+      setMembers(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch members");
+    }
   };
 
   const saveForm = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/members", userdata);
-      console.log("Member added:", response.data);
+      await axios.post("http://localhost:3000/members", userdata);
       setUserdata({ name: "", email: "", plan: "", status: "" });
-      closeForm();
-      fetchData(); // refresh member list
-    } catch (error) {
-      console.error("Error adding member:", error);
-      alert("Failed to add member. Please try again.");
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/members");
-      setMembers(response.data);
-    } catch (error) {
-      console.error("Error fetching members:", error);
-      alert("Failed to fetch members. Please try again.");
+      setShowModal(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add member");
     }
   };
 
@@ -64,205 +59,230 @@ const Members = () => {
     fetchData();
   }, []);
 
-  const openForm = () => setShowModal(true);
-  const closeForm = () => setShowModal(false);
+  // ================= FORM =================
+  const handleData = (e) => {
+    setUserdata({ ...userdata, [e.target.name]: e.target.value });
+  };
 
-  // Chart Data
-  const growthData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
+  // ================= CHART LOGIC =================
+
+  // Monthly Growth
+  const growthData = useMemo(() => {
+  const months = [
+    "Jan","Feb","Mar","Apr","May","Jun",
+    "Jul","Aug","Sep","Oct","Nov","Dec"
+  ];
+
+  const count = Array(12).fill(0);
+
+  members.forEach((member) => {
+    if (member.createdAt) {
+      const monthIndex = new Date(member.createdAt).getMonth();
+      count[monthIndex]++;
+    }
+  });
+
+  return {
+    labels: months,
     datasets: [
       {
-        label: "New Members",
-        data: [20, 35, 28, 45, 40],
+        label: "Member Growth",
+        data: count,
         backgroundColor: "#E36A6A",
+        borderRadius: 6,
+        barThickness: 30,
       },
     ],
   };
+}, [members]);
 
-  const planData = {
-    labels: ["Basic", "Standard", "Premium"],
-    datasets: [
-      {
-        data: [40, 35, 25],
-        backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
-      },
-    ],
+  // Plan Distribution
+  const planData = useMemo(() => {
+    const plans = { Basic: 0, Standard: 0, Premium: 0 };
+
+    members.forEach((m) => {
+      if (plans[m.plan] !== undefined) {
+        plans[m.plan]++;
+      }
+    });
+
+    return {
+      labels: Object.keys(plans),
+      datasets: [
+        {
+          data: Object.values(plans),
+          backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
+        },
+      ],
+    };
+  }, [members]);
+
+  // Chart Options
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+    },
   };
 
+  // ================= UI =================
   return (
     <div className="min-h-screen bg-[#FFFBF1] p-6">
+
       {/* HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center"
-      >
-        <h1 className="text-3xl font-bold text-[#E36A6A]">Members Management</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-[#E36A6A]">
+          Members Management
+        </h1>
         <button
-          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition"
-          onClick={openForm}
+          onClick={() => setShowModal(true)}
+          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg"
         >
           + Add Member
         </button>
-      </motion.div>
+      </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
-          >
-            <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
-              Add New Member
-            </h2>
+        <div className="fixed inset-0 flex justify-center items-center bg-black/20">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add Member</h2>
 
-            <form className="flex flex-col gap-4" onSubmit={saveForm}>
+            <form onSubmit={saveForm} className="flex flex-col gap-3">
               <input
-                type="text"
                 name="name"
                 value={userdata.name}
                 onChange={handleData}
-                placeholder="Full Name"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                placeholder="Name"
+                className="border p-2 rounded"
                 required
               />
               <input
-                type="email"
                 name="email"
                 value={userdata.email}
                 onChange={handleData}
                 placeholder="Email"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                className="border p-2 rounded"
                 required
               />
+
               <select
                 name="plan"
                 value={userdata.plan}
                 onChange={handleData}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                className="border p-2 rounded"
                 required
               >
                 <option value="">Select Plan</option>
-                <option value="Basic">Basic</option>
-                <option value="Standard">Standard</option>
-                <option value="Premium">Premium</option>
+                <option>Basic</option>
+                <option>Standard</option>
+                <option>Premium</option>
               </select>
+
               <select
                 name="status"
                 value={userdata.status}
                 onChange={handleData}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                className="border p-2 rounded"
                 required
               >
                 <option value="">Select Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option>Active</option>
+                <option>Inactive</option>
               </select>
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={closeForm}
-                  className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+                  onClick={() => setShowModal(false)}
+                  className="bg-gray-300 px-3 py-1 rounded"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
-                >
-                  Add Member
+                <button className="bg-[#E36A6A] text-white px-3 py-1 rounded">
+                  Save
                 </button>
               </div>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
-        {[
-          { title: "Total Members", value: members.length },
-          { title: "Active", value: members.filter(m => m.status === "Active").length },
-          { title: "Inactive", value: members.filter(m => m.status === "Inactive").length },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05 }}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <h3 className="text-gray-600">{item.title}</h3>
-            <p className="text-2xl font-bold text-[#E36A6A] mt-2">{item.value}</p>
-          </motion.div>
-        ))}
+        <Card title="Total" value={members.length} />
+        <Card
+          title="Active"
+          value={members.filter((m) => m.status === "Active").length}
+        />
+        <Card
+          title="Inactive"
+          value={members.filter((m) => m.status === "Inactive").length}
+        />
       </div>
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6 mt-10">
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md"
-        >
-          <h2 className="text-lg font-semibold mb-4">Member Growth</h2>
-          <Bar data={growthData} />
-        </motion.div>
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="mb-3 font-semibold">Member Growth</h2>
+          <Bar data={growthData} options={chartOptions} />
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center"
-        >
-          <h2 className="text-lg font-semibold mb-4">Plan Distribution</h2>
+        <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+          <h2 className="mb-3 font-semibold">Plans</h2>
           <div className="w-[250px]">
             <Doughnut data={planData} />
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* MEMBERS TABLE */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        className="bg-white p-6 rounded-xl shadow-md mt-10 overflow-x-auto"
-      >
-        <h2 className="text-lg font-semibold mb-4">Members List</h2>
 
-        <table className="w-full text-left border-collapse">
+      {/* TABLE */}
+      <div className="bg-white p-4 rounded shadow mt-10 overflow-x-auto">
+        <h2 className="mb-4 font-semibold">Members</h2>
+
+        <table className="w-full">
           <thead>
             <tr className="bg-[#FFF2D0]">
-              <th className="p-3">Name</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Plan</th>
-              <th className="p-3">Status</th>
+              <th className="p-2">Name</th>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Status</th>
             </tr>
           </thead>
+
           <tbody>
-            {members.map((val, index) => (
-              <tr key={index} className="border-b">
-                <td className="p-3">{val.name}</td>
-                <td className="p-3">{val.email}</td>
-                <td className="p-3">{val.plan}</td>
-                <td className="p-3">
+            {members.map((m, i) => (
+              <tr key={i} className="border-b">
+                <td className="p-2">{m.name}</td>
+                <td>{m.email}</td>
+                <td>{m.plan}</td>
+                <td>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm ${val.status === "Active"
+                    className={`px-2 py-1 rounded text-sm ${
+                      m.status === "Active"
                         ? "bg-green-100 text-green-600"
                         : "bg-red-100 text-red-600"
-                      }`}
+                    }`}
                   >
-                    {val.status}
+                    {m.status}
                   </span>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </motion.div>
+      </div>
     </div>
   );
 };
 
-export default Members;
+// reusable stat card
+const Card = ({ title, value }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <p className="text-gray-500">{title}</p>
+    <h2 className="text-2xl font-bold text-[#E36A6A]">{value}</h2>
+  </div>
+);
+
+export default Members; 

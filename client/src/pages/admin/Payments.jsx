@@ -10,18 +10,15 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
 const Payments = () => {
   const [showModal, setShowModal] = useState(false);
-  const openForm = () => {
-    setShowModal(true);
-  }
-  const closeForm = () => { setShowModal(false); };
   const [payments, setPayments] = useState([]);
+
   const [paymentData, setPaymentData] = useState({
     name: "",
     amount: "",
@@ -29,32 +26,32 @@ const Payments = () => {
     status: "",
   });
 
-  const handlePaymentData = (e) => {
-    const { name, value } = e.target;
-    setPaymentData((prev) => ({ ...prev, [name]: value }));
+  // ================= API =================
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/payments");
+      setPayments(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch payments");
+    }
   };
 
   const savePayment = async (e) => {
     e.preventDefault();
-   try {
-      const response = await axios.post("http://localhost:3000/payments", paymentData);
-      console.log("Payment added:", response.data);
-      closeForm();
-      fetchData(); 
-    } catch (error) {
-      console.error("Error adding payment:", error);
-      alert("Failed to add payment. Please try again.");
-    }
-  };
-
-  
-  const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/payments");
-      setPayments(response.data); 
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      alert("Failed to fetch payments. Please try again.");
+      await axios.post("http://localhost:3000/payments", {
+        ...paymentData,
+        amount: Number(paymentData.amount),
+        createdAt: new Date().toISOString(), // ✅ important
+      });
+
+      setPaymentData({ name: "", amount: "", method: "", status: "" });
+      setShowModal(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add payment");
     }
   };
 
@@ -62,208 +59,215 @@ const Payments = () => {
     fetchData();
   }, []);
 
-  // 📊 Chart Data
-  const revenueData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-    datasets: [
-      {
-        label: "Revenue (₹)",
-        data: [15000, 20000, 18000, 25000, 22000],
-        backgroundColor: "#E36A6A",
-      },
-    ],
+  const handlePaymentData = (e) => {
+    const { name, value } = e.target;
+    setPaymentData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const methodData = {
-    labels: ["UPI", "Card", "Cash"],
-    datasets: [
-      {
-        data: [50, 30, 20],
-        backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
-      },
-    ],
-  };
+  // ================= CHARTS =================
 
+  // 📊 Monthly Revenue
+  const revenueData = useMemo(() => {
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const revenue = Array(12).fill(0);
+
+    payments.forEach((p) => {
+      if (p.createdAt && p.status === "Paid") {
+        const m = new Date(p.createdAt).getMonth();
+        revenue[m] += Number(p.amount);
+      }
+    });
+
+    return {
+      labels: months,
+      datasets: [
+        {
+          label: "Revenue (₹)",
+          data: revenue,
+          backgroundColor: "#E36A6A",
+          borderRadius: 6,
+        },
+      ],
+    };
+  }, [payments]);
+
+  // 🍩 Payment Methods
+  const methodData = useMemo(() => {
+    const methods = { UPI: 0, Card: 0, Cash: 0 };
+
+    payments.forEach((p) => {
+      if (methods[p.method] !== undefined) {
+        methods[p.method]++;
+      }
+    });
+
+    return {
+      labels: Object.keys(methods),
+      datasets: [
+        {
+          data: Object.values(methods),
+          backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
+        },
+      ],
+    };
+  }, [payments]);
+
+  // ================= STATS =================
+
+  const totalRevenue = payments
+    .filter((p) => p.status === "Paid")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const thisMonthRevenue = payments
+    .filter((p) => {
+      if (!p.createdAt) return false;
+      const d = new Date(p.createdAt);
+      const now = new Date();
+      return (
+        p.status === "Paid" &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
+    })
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  const pendingAmount = payments
+    .filter((p) => p.status === "Pending")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  // ================= UI =================
   return (
     <div className="min-h-screen bg-[#FFFBF1] p-6">
 
       {/* HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center"
-      >
+      <motion.div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-[#E36A6A]">Payments Management</h1>
-        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition" onClick={openForm}>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg"
+        >
           + Add Payment
         </button>
       </motion.div>
 
+      {/* MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black/20">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add Payment</h2>
 
-      {/* Modal */}
-{showModal && (
-  <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.8, opacity: 0 }}
-      className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
-    >
-      <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
-        Add New Payment
-      </h2>
+            <form onSubmit={savePayment} className="flex flex-col gap-3">
+              <input
+                name="name"
+                value={paymentData.name}
+                onChange={handlePaymentData}
+                placeholder="Member Name"
+                className="border p-2 rounded"
+                required
+              />
 
-      <form className="flex flex-col gap-4" onSubmit={savePayment}>
-        <input
-          type="text"
-          name="name"
-          value={paymentData.name}
-          onChange={handlePaymentData}
-          placeholder="Member Name"
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
+              <input
+                name="amount"
+                type="number"
+                value={paymentData.amount}
+                onChange={handlePaymentData}
+                placeholder="Amount"
+                className="border p-2 rounded"
+                required
+              />
 
-        <input
-          type="number"
-          name="amount"
-          value={paymentData.amount}
-          onChange={handlePaymentData}
-          placeholder="Amount (₹)"
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        />
+              <select name="method" value={paymentData.method} onChange={handlePaymentData} className="border p-2 rounded" required>
+                <option value="">Method</option>
+                <option>UPI</option>
+                <option>Card</option>
+                <option>Cash</option>
+              </select>
 
-        <select
-          name="method"
-          value={paymentData.method}
-          onChange={handlePaymentData}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        >
-          <option value="">Select Payment Method</option>
-          <option value="UPI">UPI</option>
-          <option value="Card">Card</option>
-          <option value="Cash">Cash</option>
-        </select>
+              <select name="status" value={paymentData.status} onChange={handlePaymentData} className="border p-2 rounded" required>
+                <option value="">Status</option>
+                <option>Paid</option>
+                <option>Pending</option>
+              </select>
 
-        <select
-          name="status"
-          value={paymentData.status}
-          onChange={handlePaymentData}
-          className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
-          required
-        >
-          <option value="">Select Status</option>
-          <option value="Paid">Paid</option>
-          <option value="Pending">Pending</option>
-        </select>
-
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            type="button"
-            onClick={closeForm}
-            className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
-          >
-            Add Payment
-          </button>
+              <div className="flex justify-end gap-2">
+                <button type="button" onClick={() => setShowModal(false)} className="bg-gray-300 px-3 py-1 rounded">
+                  Cancel
+                </button>
+                <button className="bg-[#E36A6A] text-white px-3 py-1 rounded">
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
-    </motion.div>
-  </div>
-)}
+      )}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
-        {[
-          { title: "Total Revenue", value: "₹1.2L" },
-          { title: "This Month", value: "₹25K" },
-          { title: "Pending", value: "₹5K" },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05 }}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <h3 className="text-gray-600">{item.title}</h3>
-            <p className="text-2xl font-bold text-[#E36A6A] mt-2">{item.value}</p>
-          </motion.div>
-        ))}
+        <Card title="Total Revenue" value={`₹${totalRevenue}`} />
+        <Card title="This Month" value={`₹${thisMonthRevenue}`} />
+        <Card title="Pending" value={`₹${pendingAmount}`} />
       </div>
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6 mt-10">
-
-        {/* REVENUE */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md"
-        >
-          <h2 className="text-lg font-semibold mb-4">Monthly Revenue</h2>
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="mb-3 font-semibold">Monthly Revenue</h2>
           <Bar data={revenueData} />
-        </motion.div>
+        </div>
 
-        {/* PAYMENT METHODS */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center"
-        >
-          <h2 className="text-lg font-semibold mb-4">Payment Methods</h2>
+        <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+          <h2 className="mb-3 font-semibold">Payment Methods</h2>
           <div className="w-[250px]">
             <Doughnut data={methodData} />
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* PAYMENTS TABLE */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        className="bg-white p-6 rounded-xl shadow-md mt-10 overflow-x-auto"
-      >
-        <h2 className="text-lg font-semibold mb-4">Payment History</h2>
-        <table className="w-full text-left border-collapse">
+      {/* TABLE */}
+      <div className="bg-white p-4 rounded shadow mt-10 overflow-x-auto">
+        <h2 className="mb-4 font-semibold">Payments</h2>
+
+        <table className="w-full">
           <thead>
             <tr className="bg-[#FFF2D0]">
-              <th className="p-3">Member</th>
-              <th className="p-3">Amount</th>
-              <th className="p-3">Method</th>
-              <th className="p-3">Status</th>
+              <th className="p-2">Name</th>
+              <th>Amount</th>
+              <th>Method</th>
+              <th>Status</th>
             </tr>
           </thead>
+
           <tbody>
-            {payments.map((pay, i) => (
+            {payments.map((p, i) => (
               <tr key={i} className="border-b">
-                <td className="p-3">{pay.name}</td>
-                <td className="p-3">{pay.amount}</td>
-                <td className="p-3">{pay.method}</td>
-                <td className="p-3">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      pay.status === "Paid"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-yellow-100 text-yellow-600"
-                    }`}
-                  >
-                    {pay.status}
+                <td className="p-2">{p.name}</td>
+                <td>₹{p.amount}</td>
+                <td>{p.method}</td>
+                <td>
+                  <span className={`px-2 py-1 rounded text-sm ${
+                    p.status === "Paid"
+                      ? "bg-green-100 text-green-600"
+                      : "bg-yellow-100 text-yellow-600"
+                  }`}>
+                    {p.status}
                   </span>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </motion.div>
-
+      </div>
     </div>
   );
 };
+
+// reusable card
+const Card = ({ title, value }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <p className="text-gray-500">{title}</p>
+    <h2 className="text-2xl font-bold text-[#E36A6A]">{value}</h2>
+  </div>
+);
 
 export default Payments;

@@ -14,82 +14,589 @@
     }
   ],
   "members": [
+  {
+    "id": 1,
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2026-03-31T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Amit Sharma",
+    "email": "amit.sharma@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2026-03-15T08:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Priya Singh",
+    "email": "priya.singh@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2026-02-20T12:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Rahul Verma",
+    "email": "rahul.verma@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2026-02-05T09:15:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Sneha Patil",
+    "email": "sneha.patil@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2026-01-28T14:45:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Vikas Gupta",
+    "email": "vikas.gupta@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2026-01-10T11:20:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "Anjali Mehta",
+    "email": "anjali.mehta@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2025-12-22T16:10:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Rohit Yadav",
+    "email": "rohit.yadav@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2025-12-05T07:50:00.000Z"
+  },
+  {
+    "id": 9,
+    "name": "Pooja Nair",
+    "email": "pooja.nair@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2025-11-18T13:30:00.000Z"
+  },
+  {
+    "id": 10,
+    "name": "Karan Malhotra",
+    "email": "karan.malhotra@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2025-11-02T10:00:00.000Z"
+  },
+  {
+    "id": 11,
+    "name": "Neha Kapoor",
+    "email": "neha.kapoor@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2025-10-25T09:40:00.000Z"
+  },
+  {
+    "id": 12,
+    "name": "Arjun Reddy",
+    "email": "arjun.reddy@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2025-10-10T15:25:00.000Z"
+  },
+  {
+    "id": 13,
+    "name": "Meera Iyer",
+    "email": "meera.iyer@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2025-09-29T11:10:00.000Z"
+  },
+  {
+    "id": 14,
+    "name": "Sanjay Kulkarni",
+    "email": "sanjay.kulkarni@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2025-09-12T08:55:00.000Z"
+  },
+  {
+    "id": 15,
+    "name": "Ritika Jain",
+    "email": "ritika.jain@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2025-08-30T17:20:00.000Z"
+  },
+  {
+    "id": 16,
+    "name": "Deepak Chavan",
+    "email": "deepak.chavan@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2026-04-02T09:10:00.000Z"
+  },
+  {
+    "id": 17,
+    "name": "Kavita Joshi",
+    "email": "kavita.joshi@example.com",
+    "plan": "Standard",
+    "status": "Active",
+    "createdAt": "2026-06-25T14:20:00.000Z"
+  },
+  {
+    "id": 18,
+    "name": "Manoj Deshmukh",
+    "email": "manoj.deshmukh@example.com",
+    "plan": "Basic",
+    "status": "Inactive",
+    "createdAt": "2026-03-10T11:05:00.000Z"
+  },
+  {
+    "id": 19,
+    "name": "Pallavi More",
+    "email": "pallavi.more@example.com",
+    "plan": "Premium",
+    "status": "Active",
+    "createdAt": "2026-02-18T16:45:00.000Z"
+  },
+  {
+    "id": 20,
+    "name": "Nikhil Sawant",
+    "email": "nikhil.sawant@example.com",
+    "plan": "Standard",
+    "status": "Inactive",
+    "createdAt": "2026-01-22T08:30:00.000Z"
+  }
+
+],
+  "trainers": 
+    [
+  {
+    "id": 1,
+    "name": "Jane Smith",
+    "email": "jane.smith@example.com",
+    "specialization": "Strength",
+    "experience": "5 Years",
+    "createdAt": "2026-03-31T10:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Rahul Patil",
+    "email": "rahul.patil@example.com",
+    "specialization": "Weight Loss",
+    "experience": "3 Years",
+    "createdAt": "2026-03-20T09:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Sneha Kulkarni",
+    "email": "sneha.k@example.com",
+    "specialization": "Yoga",
+    "experience": "4 Years",
+    "createdAt": "2026-02-15T08:45:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Amit Joshi",
+    "email": "amit.joshi@example.com",
+    "specialization": "Cardio",
+    "experience": "6 Years",
+    "createdAt": "2026-02-01T12:15:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Priya Nair",
+    "email": "priya.nair@example.com",
+    "specialization": "Strength",
+    "experience": "2 Years",
+    "createdAt": "2026-01-25T14:10:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Rohit Sharma",
+    "email": "rohit.sharma@example.com",
+    "specialization": "Weight Loss",
+    "experience": "7 Years",
+    "createdAt": "2026-01-10T11:30:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "Meera Iyer",
+    "email": "meera.iyer@example.com",
+    "specialization": "Yoga",
+    "experience": "5 Years",
+    "createdAt": "2025-12-18T16:00:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Karan Verma",
+    "email": "karan.verma@example.com",
+    "specialization": "Cardio",
+    "experience": "3 Years",
+    "createdAt": "2025-12-05T10:20:00.000Z"
+  },
+  {
+    "id": 9,
+    "name": "Neha Kapoor",
+    "email": "neha.kapoor@example.com",
+    "specialization": "Strength",
+    "experience": "6 Years",
+    "createdAt": "2025-11-22T09:50:00.000Z"
+  },
+  {
+    "id": 10,
+    "name": "Arjun Reddy",
+    "email": "arjun.reddy@example.com",
+    "specialization": "Weight Loss",
+    "experience": "4 Years",
+    "createdAt": "2025-11-10T13:40:00.000Z"
+  }
+
+  ],
+
+  "payments": [
     {
       "id": 1,
       "name": "John Doe",
-      "email": "john.doe@example.com",
-      "plan": "Premium",
-      "status": "Active"
-    },
-    {
-      "name": "Sumit Jadav",
-      "email": "sumitjadav2525@gmail.com",
-      "plan": "Basic",
-      "status": "Inactive",
-      "id": 2
-    },
-    {
-      "name": "Saurabh Magare",
-      "email": "sauitjadav2525@gmail.com",
-      "plan": "Standard",
-      "status": "Active",
-      "id": 3
-    }
-  ],
-  "trainers": [
-    {
-      "id": 1,
-      "name": "Jane Smith",
-      "email": "jane.smith@example.com",
-      "specialization": "Strength",
-      "experience": "5 Years"
-    },
-    {
-      "name": "Sumit Jadav",
-      "email": "sumitjadav2525@gmail.com",
-      "specialization": "Yoga",
-      "experience": "3",
-      "id": 2
-    }
-  ],
-  "payments": [
-    {
-      "name": "Sumit Jadav",
-      "amount": "350.00",
-      "method": "Cash",
+      "amount": 2000,
+      "method": "UPI",
       "status": "Paid",
-      "id": 3
-    }
-  ],
-  "plans": [
-    {
-      "id": 1,
-      "name": "Basic",
-      "duration": "1 Month",
-      "price": "30.00"
+      "createdAt": "2026-03-31T10:00:00.000Z"
     },
     {
       "id": 2,
-      "name": "Standard",
-      "duration": "3 Months",
-      "price": "80.00"
+      "name": "Amit Sharma",
+      "amount": 1500,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2026-03-20T09:00:00.000Z"
     },
     {
       "id": 3,
-      "name": "Premium",
-      "duration": "6 Months",
-      "price": "150.00"
+      "name": "Priya Singh",
+      "amount": 1000,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2026-03-10T11:00:00.000Z"
     },
     {
-      "name": "december",
-      "price": "2000",
-      "duration": "3",
-      "features": "yoga, cardio",
-      "status": "Active",
-      "": "d",
-      "id": 4
+      "id": 4,
+      "name": "Rahul Verma",
+      "amount": 2500,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2026-02-25T12:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "name": "Sneha Patil",
+      "amount": 1800,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2026-02-15T14:30:00.000Z"
+    },
+    {
+      "id": 6,
+      "name": "Vikas Gupta",
+      "amount": 1200,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2026-02-05T08:20:00.000Z"
+    },
+    {
+      "id": 7,
+      "name": "Anjali Mehta",
+      "amount": 3000,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2026-01-28T16:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "name": "Rohit Yadav",
+      "amount": 2200,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2026-01-18T10:15:00.000Z"
+    },
+    {
+      "id": 9,
+      "name": "Pooja Nair",
+      "amount": 900,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2026-01-10T09:30:00.000Z"
+    },
+    {
+      "id": 10,
+      "name": "Karan Malhotra",
+      "amount": 2700,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2025-12-25T11:45:00.000Z"
+    },
+    {
+      "id": 11,
+      "name": "Neha Kapoor",
+      "amount": 1600,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2025-12-15T13:20:00.000Z"
+    },
+    {
+      "id": 12,
+      "name": "Arjun Reddy",
+      "amount": 1100,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2025-12-05T08:40:00.000Z"
+    },
+    {
+      "id": 13,
+      "name": "Meera Iyer",
+      "amount": 2800,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2025-11-22T14:10:00.000Z"
+    },
+    {
+      "id": 14,
+      "name": "Sanjay Kulkarni",
+      "amount": 1900,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2025-11-10T10:50:00.000Z"
+    },
+    {
+      "id": 15,
+      "name": "Ritika Jain",
+      "amount": 1300,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2025-11-02T09:25:00.000Z"
+    },
+    {
+      "id": 16,
+      "name": "Deepak Chavan",
+      "amount": 2600,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2026-04-02T09:10:00.000Z"
+    },
+    {
+      "id": 17,
+      "name": "Kavita Joshi",
+      "amount": 1700,
+      "method": "Card",
+      "status": "Paid",
+      "createdAt": "2026-03-25T14:20:00.000Z"
+    },
+    {
+      "id": 18,
+      "name": "Manoj Deshmukh",
+      "amount": 800,
+      "method": "Cash",
+      "status": "Pending",
+      "createdAt": "2026-03-12T11:05:00.000Z"
+    },
+    {
+      "id": 19,
+      "name": "Pallavi More",
+      "amount": 3000,
+      "method": "UPI",
+      "status": "Paid",
+      "createdAt": "2026-02-18T16:45:00.000Z"
+    },
+    {
+      "id": 20,
+      "name": "Nikhil Sawant",
+      "amount": 1400,
+      "method": "Card",
+      "status": "Pending",
+      "createdAt": "2026-01-22T08:30:00.000Z"
     }
   ],
+
+  "plans":[
+    
+  {
+    "id": 1,
+    "name": "Basic",
+    "price": 999,
+    "duration": "1 Month",
+    "features": "Gym Access",
+    "status": "Active",
+    "createdAt": "2026-01-05T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Standard",
+    "price": 1999,
+    "duration": "3 Months",
+    "features": "Gym + Cardio",
+    "status": "Active",
+    "createdAt": "2026-01-15T12:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Premium",
+    "price": 2999,
+    "duration": "6 Months",
+    "features": "All Access + Trainer",
+    "status": "Active",
+    "createdAt": "2026-02-02T09:15:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "Basic",
+    "price": 999,
+    "duration": "1 Month",
+    "features": "Gym Access",
+    "status": "Inactive",
+    "createdAt": "2026-02-10T14:20:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Standard",
+    "price": 1999,
+    "duration": "3 Months",
+    "features": "Gym + Cardio",
+    "status": "Active",
+    "createdAt": "2026-02-18T16:45:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Premium",
+    "price": 2999,
+    "duration": "6 Months",
+    "features": "All Access + Trainer",
+    "status": "Active",
+    "createdAt": "2026-03-01T11:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "Basic",
+    "price": 999,
+    "duration": "1 Month",
+    "features": "Gym Access",
+    "status": "Active",
+    "createdAt": "2026-03-05T13:25:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Standard",
+    "price": 1999,
+    "duration": "3 Months",
+    "features": "Gym + Cardio",
+    "status": "Inactive",
+    "createdAt": "2026-03-12T08:40:00.000Z"
+  },
+  {
+    "id": 9,
+    "name": "Premium",
+    "price": 2999,
+    "duration": "6 Months",
+    "features": "All Access + Trainer",
+    "status": "Active",
+    "createdAt": "2026-03-20T18:10:00.000Z"
+  },
+  {
+    "id": 10,
+    "name": "Basic",
+    "price": 999,
+    "duration": "1 Month",
+    "features": "Gym Access",
+    "status": "Active",
+    "createdAt": "2026-04-02T07:50:00.000Z"
+  },
+  {
+    "id": 11,
+    "name": "Standard",
+    "price": 1999,
+    "duration": "3 Months",
+    "features": "Gym + Cardio",
+    "status": "Active",
+    "createdAt": "2026-04-10T15:30:00.000Z"
+  },
+  {
+    "id": 12,
+    "name": "Premium",
+    "price": 2999,
+    "duration": "6 Months",
+    "features": "All Access + Trainer",
+    "status": "Inactive",
+    "createdAt": "2026-04-18T10:10:00.000Z"
+  },
+  {
+    "id": 13,
+    "name": "Basic",
+    "price": 999,
+    "duration": "1 Month",
+    "features": "Gym Access",
+    "status": "Active",
+    "createdAt": "2026-05-01T09:00:00.000Z"
+  },
+  {
+    "id": 14,
+    "name": "Standard",
+    "price": 1999,
+    "duration": "3 Months",
+    "features": "Gym + Cardio",
+    "status": "Active",
+    "createdAt": "2026-05-15T11:45:00.000Z"
+  },
+  {
+    "id": 15,
+    "name": "Premium",
+    "price": 2999,
+    "duration": "6 Months",
+    "features": "All Access + Trainer",
+    "status": "Active",
+    "createdAt": "2026-06-05T17:20:00.000Z"
+  }
+
+  ],
+  "revenue": [
+    { "month": "Jan", "amount": 12000, "createdAt": "2026-01-05T10:00:00.000Z" },
+    { "month": "Feb", "amount": 18000, "createdAt": "2026-02-06T11:30:00.000Z" },
+    { "month": "Mar", "amount": 15000, "createdAt": "2026-03-07T09:20:00.000Z" },
+    { "month": "Apr", "amount": 22000, "createdAt": "2026-04-08T14:10:00.000Z" },
+    { "month": "May", "amount": 20000, "createdAt": "2026-05-09T16:45:00.000Z" }
+  ],
+
+ "memberGrowth": [
+    { "month": "Jan", "count": 200, "createdAt": "2026-01-10T08:00:00.000Z" },
+    { "month": "Feb", "count": 250, "createdAt": "2026-02-11T09:15:00.000Z" },
+    { "month": "Mar", "count": 300, "createdAt": "2026-03-12T10:30:00.000Z" },
+    { "month": "Apr", "count": 380, "createdAt": "2026-04-13T12:00:00.000Z" },
+    { "month": "May", "count": 420, "createdAt": "2026-05-14T13:20:00.000Z" }
+  ],
+
+  "attendance": {
+    "present": {
+      "value": 75,
+      "createdAt": "2026-05-20T10:00:00.000Z"
+    },
+    "absent": {
+      "value": 25,
+      "createdAt": "2026-05-20T10:00:00.000Z"
+    }
+  },
+
+  "summary": {
+    "totalRevenue": 250000,
+    "totalMembers": 520,
+    "attendanceRate": 75,
+    "growthRate": 12,
+    "createdAt": "2026-05-31T18:00:00.000Z"
+  },
   "profile": {
     "name": "typicode"
   }

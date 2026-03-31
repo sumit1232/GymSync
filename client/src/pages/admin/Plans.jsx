@@ -10,7 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
 ChartJS.register(
@@ -23,10 +23,9 @@ ChartJS.register(
 );
 
 const Plans = () => {
-
   const [showModal, setShowModal] = useState(false);
-
   const [plans, setPlans] = useState([]);
+
   const [formData, setFormData] = useState({
     name: "",
     price: "",
@@ -35,288 +34,263 @@ const Plans = () => {
     status: "Active",
   });
 
-  const handleData = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // ================= API =================
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/plans");
+      setPlans(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch plans");
+    }
   };
 
   const saveForm = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/plans", formData);
-      console.log("Plan added:", response.data);
-      setFormData({ name: "", price: "", duration: "", features: "", status: "Active" });
-      closeForm();
-      fetchData(); // refresh plan list
-    } catch (error) {
-      console.error("Error adding plan:", error);
-      alert("Failed to add plan. Please try again.");
-    }
-  };
-
-    const fetchData = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/plans");
-      setPlans(response.data);
-    } catch (error) {
-      console.error("Error fetching plans:", error);
-      alert("Failed to fetch plans. Please try again.");
+      await axios.post("http://localhost:3000/plans", formData);
+      setFormData({
+        name: "",
+        price: "",
+        duration: "",
+        features: "",
+        status: "Active",
+      });
+      setShowModal(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add plan");
     }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
-  // Function to open the modal
-  const openForm = () => {
-    setShowModal(true); // opens the modal
+
+  // ================= HANDLERS =================
+  const handleData = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Function to close the modal
-  const closeForm = () => {
-    setShowModal(false); // closes the modal
-  };
+  // ================= CHART LOGIC =================
 
+  // Plan Popularity (count plans by name)
+  const popularityData = useMemo(() => {
+    if (!plans.length) return { labels: [], datasets: [] };
 
-  // 📊 Chart Data
-  const popularityData = {
-    labels: ["Basic", "Standard", "Premium"],
-    datasets: [
-      {
-        label: "Subscribers",
-        data: [120, 90, 60],
-        backgroundColor: "#E36A6A",
-      },
-    ],
-  };
+    const count = {};
 
-  const revenueShare = {
-    labels: ["Basic", "Standard", "Premium"],
-    datasets: [
-      {
-        data: [30, 40, 30],
-        backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
-      },
-    ],
-  };
+    plans.forEach((p) => {
+      count[p.name] = (count[p.name] || 0) + 1;
+    });
 
+    return {
+      labels: Object.keys(count),
+      datasets: [
+        {
+          label: "Subscribers",
+          data: Object.values(count),
+          backgroundColor: "#E36A6A",
+          borderRadius: 6,
+        },
+      ],
+    };
+  }, [plans]);
 
+  // Revenue Share (based on price)
+  const revenueShare = useMemo(() => {
+    if (!plans.length) return { labels: [], datasets: [] };
+
+    const revenueMap = {};
+
+    plans.forEach((p) => {
+      const price = parseInt(p.price) || 0;
+      revenueMap[p.name] = (revenueMap[p.name] || 0) + price;
+    });
+
+    return {
+      labels: Object.keys(revenueMap),
+      datasets: [
+        {
+          data: Object.values(revenueMap),
+          backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0"],
+        },
+      ],
+    };
+  }, [plans]);
+
+  // ================= STATS =================
+  const totalPlans = plans.length;
+
+  const activePlans = plans.filter((p) => p.status === "Active").length;
+
+  const topPlan = useMemo(() => {
+    if (!plans.length) return "-";
+
+    const count = {};
+    plans.forEach((p) => {
+      count[p.name] = (count[p.name] || 0) + 1;
+    });
+
+    return Object.keys(count).reduce((a, b) =>
+      count[a] > count[b] ? a : b
+    );
+  }, [plans]);
+
+  // ================= UI =================
   return (
     <div className="min-h-screen bg-[#FFFBF1] p-6">
 
       {/* HEADER */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-center"
-      >
+      <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-[#E36A6A]">
           Plans Management
         </h1>
 
-        <button className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition" onClick={() => openForm()}>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg"
+        >
           + Add Plan
         </button>
-      </motion.div>
+      </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
-          >
-            <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">
-              Add New Plan
-            </h2>
+        <div className="fixed inset-0 flex justify-center items-center bg-black/20">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
 
-            <form
-              className="flex flex-col gap-4"
-              onSubmit={saveForm}
-            >
+            <h2 className="text-xl font-bold mb-4">Add Plan</h2>
+
+            <form onSubmit={saveForm} className="flex flex-col gap-3">
+
               <input
-                type="text"
-                placeholder="Plan Name"
-               onChange={handleData}
-               name="name"
+                name="name"
                 value={formData.name}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                onChange={handleData}
+                placeholder="Plan Name"
+                className="border p-2 rounded"
                 required
               />
 
               <input
+                name="price"
                 type="number"
-                placeholder="Price (₹)"
-               onChange={handleData}
-               name="price"
                 value={formData.price}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                onChange={handleData}
+                placeholder="Price"
+                className="border p-2 rounded"
                 required
               />
 
               <input
-                type="text"
-                placeholder="Duration (e.g., 1 Month)"
-               onChange={handleData}
-               name="duration"
+                name="duration"
                 value={formData.duration}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                onChange={handleData}
+                placeholder="Duration"
+                className="border p-2 rounded"
                 required
               />
 
               <textarea
-                placeholder="Features (comma separated)"
-               onChange={handleData}
-               name="features"
+                name="features"
                 value={formData.features}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                onChange={handleData}
+                placeholder="Features (comma separated)"
+                className="border p-2 rounded"
                 required
               />
 
               <select
-               onChange={handleData}
-               value={formData.status}
-               name="status"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                name="status"
+                value={formData.status}
+                onChange={handleData}
+                className="border p-2 rounded"
               >
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
 
-              <div className="flex justify-end gap-3 mt-4">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={closeForm}
-                  className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium"
+                  onClick={() => setShowModal(false)}
+                  className="bg-gray-300 px-3 py-1 rounded"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium"
-                >
-                  Add Plan
+
+                <button className="bg-[#E36A6A] text-white px-3 py-1 rounded">
+                  Save
                 </button>
               </div>
+
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
-        {[
-          { title: "Total Plans", value: "3" },
-          { title: "Active Subscribers", value: "270" },
-          { title: "Top Plan", value: "Standard" },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05 }}
-            className="bg-white p-6 rounded-xl shadow-md"
-          >
-            <h3 className="text-gray-600">{item.title}</h3>
-            <p className="text-2xl font-bold text-[#E36A6A] mt-2">
-              {item.value}
-            </p>
-          </motion.div>
-        ))}
+        <Card title="Total Plans" value={totalPlans} />
+        <Card title="Active Plans" value={activePlans} />
+        <Card title="Top Plan" value={topPlan} />
       </div>
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6 mt-10">
 
-        {/* POPULARITY */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md"
-        >
-          <h2 className="text-lg font-semibold mb-4">
-            Plan Popularity
-          </h2>
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="mb-3 font-semibold">Plan Popularity</h2>
           <Bar data={popularityData} />
-        </motion.div>
+        </div>
 
-        {/* REVENUE SHARE */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center"
-        >
-          <h2 className="text-lg font-semibold mb-4">
-            Revenue Share
-          </h2>
+        <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+          <h2 className="mb-3 font-semibold">Revenue Share</h2>
           <div className="w-[250px]">
             <Doughnut data={revenueShare} />
           </div>
-        </motion.div>
+        </div>
+
       </div>
 
-{/* PLANS CARDS */}
-<motion.div
-  initial={{ opacity: 0, y: 40 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10"
->
-  {plans.map((plan, i) => (
-    <motion.div
-      key={i}
-      whileHover={{ scale: 1.03 }}
-      className="bg-white p-6 rounded-2xl shadow-md border hover:shadow-lg transition"
-    >
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-[#E36A6A]">
-          {plan.name}
-        </h3>
+      {/* CARDS */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+        {plans.map((plan, i) => (
+          <div key={i} className="bg-white p-6 rounded-xl shadow">
 
-        <span
-          className={`text-xs px-2 py-1 rounded-full ${
-            plan.status === "Active"
-              ? "bg-green-100 text-green-600"
-              : "bg-gray-200 text-gray-600"
-          }`}
-        >
-          {plan.status}
-        </span>
-      </div>
+            <h3 className="text-xl font-bold text-[#E36A6A]">
+              {plan.name}
+            </h3>
 
-      {/* PRICE */}
-      <p className="text-3xl font-bold mt-3">
-        ₹{plan.price}
-      </p>
+            <p className="text-2xl font-bold mt-2">₹{plan.price}</p>
+            <p className="text-gray-500">{plan.duration}</p>
 
-      <p className="text-gray-500 text-sm">
-        {plan.duration}
-      </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {(Array.isArray(plan.features)
+                ? plan.features
+                : plan.features?.split(",")
+              )?.map((f, idx) => (
+                <span key={idx} className="text-xs bg-[#FFF2D0] px-2 py-1 rounded">
+                  {f}
+                </span>
+              ))}
+            </div>
 
-      {/* FEATURES TAGS */}
-      <div className="flex flex-wrap gap-2 mt-4">
-        {(Array.isArray(plan.features)
-          ? plan.features
-          : plan.features?.split(",")
-        )?.map((f, idx) => (
-          <span
-            key={idx}
-            className="text-xs bg-[#FFF2D0] text-[#E36A6A] px-2 py-1 rounded-full"
-          >
-            {f}
-          </span>
+          </div>
         ))}
       </div>
-
-      {/* ACTION */}
-      <button className="mt-6 w-full bg-[#E36A6A] text-white py-2 rounded-lg hover:opacity-90 transition">
-        Edit Plan
-      </button>
-    </motion.div>
-  ))}
-</motion.div>
-
     </div>
   );
 };
+
+// reusable card
+const Card = ({ title, value }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <p className="text-gray-500">{title}</p>
+    <h2 className="text-2xl font-bold text-[#E36A6A]">{value}</h2>
+  </div>
+);
 
 export default Plans;

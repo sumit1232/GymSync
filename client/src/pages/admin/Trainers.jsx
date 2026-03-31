@@ -1,3 +1,4 @@
+// src/pages/admin/Trainers.jsx
 import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
@@ -9,7 +10,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar, Doughnut } from "react-chartjs-2";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
@@ -24,37 +25,27 @@ const Trainers = () => {
   });
   const [trainers, setTrainers] = useState([]);
 
-  const openForm = () => setShowModal(true);
-  const closeForm = () => {
-    setTrainerData({ name: "", email: "", specialization: "", experience: "" });
-    setShowModal(false);
-  };
-
-  const handleData = (e) => {
-    const { name, value } = e.target;
-    setTrainerData((prev) => ({ ...prev, [name]: value }));
+  // ================= API =================
+  const fetchData = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/trainers");
+      setTrainers(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch trainers");
+    }
   };
 
   const saveForm = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3000/trainers", trainerData);
-      console.log("Trainer added:", response.data);
-      closeForm();
-      fetchData(); // refresh list
-    } catch (error) {
-      console.error("Error adding trainer:", error);
-      alert("Failed to add trainer. Please try again.");
-    }
-  };
-
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/trainers");
-      setTrainers(response.data); // <-- store in trainers array
-    } catch (error) {
-      console.error("Error fetching trainers:", error);
-      alert("Failed to fetch trainers. Please try again.");
+      await axios.post("http://localhost:3000/trainers", trainerData);
+      setTrainerData({ name: "", email: "", specialization: "", experience: "" });
+      setShowModal(false);
+      fetchData();
+    } catch (err) {
+      console.error(err);
+      alert("Failed to add trainer");
     }
   };
 
@@ -62,147 +53,218 @@ const Trainers = () => {
     fetchData();
   }, []);
 
-  const performanceData = {
-    labels: ["Rahul", "Amit", "Sneha", "Priya"],
-    datasets: [{ label: "Sessions/Week", data: [20, 15, 18, 22], backgroundColor: "#E36A6A" }],
+  // ================= FORM =================
+  const handleData = (e) => {
+    const { name, value } = e.target;
+    setTrainerData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const specializationData = {
-    labels: ["Weight Loss", "Strength", "Yoga", "Cardio"],
-    datasets: [{ data: [30, 25, 20, 25], backgroundColor: ["#E36A6A", "#FFB2B2", "#FFF2D0", "#FCA5A5"] }],
+  // ================= CHARTS =================
+
+  // Trainer Performance (based on experience)
+  const performanceData = useMemo(() => {
+    if (!trainers.length) return { labels: [], datasets: [] };
+
+    const labels = trainers.map((t) => t.name);
+
+    const data = trainers.map((t) => {
+      const exp = parseInt(t.experience);
+      return isNaN(exp) ? 0 : exp * 5;
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Performance Score",
+          data,
+          backgroundColor: "#E36A6A",
+          borderRadius: 6,
+        },
+      ],
+    };
+  }, [trainers]);
+
+  // Specialization Distribution
+  const specializationData = useMemo(() => {
+    if (!trainers.length) return { labels: [], datasets: [] };
+
+    const map = {};
+
+    trainers.forEach((t) => {
+      if (!t.specialization) return;
+      map[t.specialization] = (map[t.specialization] || 0) + 1;
+    });
+
+    return {
+      labels: Object.keys(map),
+      datasets: [
+        {
+          data: Object.values(map),
+          backgroundColor: [
+            "#E36A6A",
+            "#FFB2B2",
+            "#FFF2D0",
+            "#FCA5A5",
+            "#F87171",
+          ],
+        },
+      ],
+    };
+  }, [trainers]);
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+    },
   };
 
+  // ================= UI =================
   return (
     <div className="min-h-screen bg-[#FFFBF1] p-6">
+
       {/* HEADER */}
-      <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-[#E36A6A]">Trainers Management</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-[#E36A6A]">
+          Trainers Management
+        </h1>
         <button
-          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg hover:scale-105 transition"
-          onClick={openForm}
+          onClick={() => setShowModal(true)}
+          className="bg-[#E36A6A] text-white px-4 py-2 rounded-lg"
         >
           + Add Trainer
         </button>
-      </motion.div>
+      </div>
 
-      {/* Modal */}
+      {/* MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-lg border border-gray-200"
-          >
-            <h2 className="text-2xl font-bold text-[#E36A6A] mb-6 text-center">Add New Trainer</h2>
-            <form className="flex flex-col gap-4" onSubmit={saveForm}>
+        <div className="fixed inset-0 flex justify-center items-center bg-black/20">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Add Trainer</h2>
+
+            <form onSubmit={saveForm} className="flex flex-col gap-3">
               <input
-                type="text"
                 name="name"
                 value={trainerData.name}
                 onChange={handleData}
-                placeholder="Full Name"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                placeholder="Name"
+                className="border p-2 rounded"
                 required
               />
               <input
-                type="email"
                 name="email"
                 value={trainerData.email}
                 onChange={handleData}
                 placeholder="Email"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                className="border p-2 rounded"
                 required
               />
+
               <select
                 name="specialization"
                 value={trainerData.specialization}
                 onChange={handleData}
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                className="border p-2 rounded"
                 required
               >
                 <option value="">Select Specialization</option>
-                <option value="Weight Loss">Weight Loss</option>
-                <option value="Strength">Strength</option>
-                <option value="Yoga">Yoga</option>
-                <option value="Cardio">Cardio</option>
+                <option>Weight Loss</option>
+                <option>Strength</option>
+                <option>Yoga</option>
+                <option>Cardio</option>
               </select>
+
               <input
-                type="text"
                 name="experience"
                 value={trainerData.experience}
                 onChange={handleData}
-                placeholder="Experience (e.g., 3 Years)"
-                className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#E36A6A] transition"
+                placeholder="Experience (e.g., 3)"
+                className="border p-2 rounded"
                 required
               />
-              <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={closeForm} className="px-5 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition font-medium">
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="bg-gray-300 px-3 py-1 rounded"
+                >
                   Cancel
                 </button>
-                <button type="submit" className="px-5 py-2 rounded-lg bg-[#E36A6A] hover:bg-[#d85d5d] text-white transition font-medium">
-                  Add Trainer
+                <button className="bg-[#E36A6A] text-white px-3 py-1 rounded">
+                  Save
                 </button>
               </div>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
 
       {/* STATS */}
       <div className="grid md:grid-cols-3 gap-6 mt-6">
-        {[
-          { title: "Total Trainers", value: trainers.length },
-          { title: "Active", value: "20" },
-          { title: "Specializations", value: "8" },
-        ].map((item, i) => (
-          <motion.div key={i} whileHover={{ scale: 1.05 }} className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-gray-600">{item.title}</h3>
-            <p className="text-2xl font-bold text-[#E36A6A] mt-2">{item.value}</p>
-          </motion.div>
-        ))}
+        <Card title="Total Trainers" value={trainers.length} />
+        <Card title="Specializations" value={new Set(trainers.map(t => t.specialization)).size} />
+        <Card title="Avg Experience" value={
+          trainers.length
+            ? Math.round(
+                trainers.reduce((a, b) => a + (parseInt(b.experience) || 0), 0) / trainers.length
+              )
+            : 0
+        } />
       </div>
 
       {/* CHARTS */}
       <div className="grid md:grid-cols-2 gap-6 mt-10">
-        <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} className="bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Trainer Performance</h2>
-          <Bar data={performanceData} />
-        </motion.div>
-        <motion.div initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center">
-          <h2 className="text-lg font-semibold mb-4">Specialization Distribution</h2>
+        <div className="bg-white p-4 rounded shadow">
+          <h2 className="mb-3 font-semibold">Trainer Performance</h2>
+          <Bar data={performanceData} options={chartOptions} />
+        </div>
+
+        <div className="bg-white p-4 rounded shadow flex flex-col items-center">
+          <h2 className="mb-3 font-semibold">Specializations</h2>
           <div className="w-[250px]">
             <Doughnut data={specializationData} />
           </div>
-        </motion.div>
+        </div>
       </div>
 
-      {/* TRAINERS TABLE */}
-      <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} className="bg-white p-6 rounded-xl shadow-md mt-10 overflow-x-auto">
-        <h2 className="text-lg font-semibold mb-4">Trainers List</h2>
-        <table className="w-full text-left border-collapse">
+      {/* TABLE */}
+      <div className="bg-white p-4 rounded shadow mt-10 overflow-x-auto">
+        <h2 className="mb-4 font-semibold">Trainers</h2>
+
+        <table className="w-full">
           <thead>
             <tr className="bg-[#FFF2D0]">
-              <th className="p-3">Name</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Specialization</th>
-              <th className="p-3">Experience</th>
+              <th className="p-2">Name</th>
+              <th>Email</th>
+              <th>Specialization</th>
+              <th>Experience</th>
             </tr>
           </thead>
+
           <tbody>
-            {trainers.map((trainer, i) => (
+            {trainers.map((t, i) => (
               <tr key={i} className="border-b">
-                <td className="p-3">{trainer.name}</td>
-                <td className="p-3">{trainer.email}</td>
-                <td className="p-3">{trainer.specialization}</td>
-                <td className="p-3">{trainer.experience} Years</td>
+                <td className="p-2">{t.name}</td>
+                <td>{t.email}</td>
+                <td>{t.specialization}</td>
+                <td>{t.experience} Years</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </motion.div>
+      </div>
     </div>
   );
 };
+
+// reusable card
+const Card = ({ title, value }) => (
+  <div className="bg-white p-4 rounded shadow">
+    <p className="text-gray-500">{title}</p>
+    <h2 className="text-2xl font-bold text-[#E36A6A]">{value}</h2>
+  </div>
+);
 
 export default Trainers;
